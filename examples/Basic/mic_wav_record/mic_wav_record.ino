@@ -13,7 +13,7 @@
 
 #include <M5Cardputer.h>
 #include <SPI.h>
-#include <SD.h>
+#include "SD.h"
 
 #define SD_SPI_SCK_PIN  (40)
 #define SD_SPI_MISO_PIN (39)
@@ -73,11 +73,11 @@ void setup(void)
     // SD Card Initialization
     SPI.begin(SD_SPI_SCK_PIN, SD_SPI_MISO_PIN, SD_SPI_MOSI_PIN, SD_SPI_CS_PIN);
 
-    if (!SD.begin(SD_SPI_CS_PIN, SPI, 25000000)) {
+    if (!FSYS.begin(SD_SPI_CS_PIN, SPI, 25000000)) {
         printf("Card failed, or not present\r\n");
         while (1);
     }
-    uint8_t cardType = SD.cardType();
+    uint8_t cardType = FSYS.cardType();
     if (cardType == CARD_NONE) {
         printf("No SD card attached\r\n");
         return;
@@ -92,7 +92,7 @@ void setup(void)
     } else {
         printf("UNKNOWN\r\n");
     }
-    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    uint64_t cardSize = FSYS.cardSize() / (1024 * 1024);
     printf("SD Card Size: %lluMB\r\n", cardSize);
 
     rec_data = (typeof(rec_data))heap_caps_malloc(record_size * sizeof(int16_t), MALLOC_CAP_8BIT);
@@ -195,7 +195,7 @@ void scanAndDisplayWAVFiles()
     static std::vector<String> previousWavFiles;
 
     // Scan the WAV files on the SD card and store them in wavFiles.
-    File dir = SD.open("/");
+    File dir = FSYS.open("/");
     if (!dir) {
         printf("Failed to open directory.\n");
         return;
@@ -236,7 +236,7 @@ void scanAndDisplayWAVFiles()
             // Delete the selected file.
             if (status.del) {
                 String filePath = "/" + wavFiles[selectedFileIndex];
-                if (SD.remove(filePath.c_str())) {
+                if (FSYS.remove(filePath.c_str())) {
                     printf("Deleted file: %s\n", filePath.c_str());
                     wavFiles.erase(wavFiles.begin() + selectedFileIndex);
                     if (selectedFileIndex >= wavFiles.size() && !wavFiles.empty()) {
@@ -260,7 +260,7 @@ bool playSelectedWAVFile(const String& fileName)
     String filePath = "/" + fileName;
     printf("Playing WAV file: %s\n", filePath.c_str());
 
-    File file = SD.open(filePath.c_str());
+    File file = FSYS.open(filePath.c_str());
     if (!file) {
         printf("Failed to open WAV file: %s\n", filePath.c_str());
         return false;
@@ -283,7 +283,7 @@ bool playSelectedWAVFile(const String& fileName)
 
 bool playWAVFileFromSD(void)
 {
-    File dir       = SD.open("/");
+    File dir       = FSYS.open("/");
     String wavFile = "";
 
     // Search for the first WAV file
@@ -303,7 +303,7 @@ bool playWAVFileFromSD(void)
     }
 
     printf("Playing WAV file: %s\n", wavFile.c_str());
-    File file = SD.open(wavFile.c_str());
+    File file = FSYS.open(wavFile.c_str());
     if (!file) {
         printf("Failed to open WAV file: %s\n", wavFile.c_str());
         return false;
@@ -377,7 +377,7 @@ bool saveWAVToSD(int16_t* data, size_t dataSize)
     // Generate a unique file name based on a counter. The counter defaults to 1 upon device reboot.
     char filename[32];
     snprintf(filename, sizeof(filename), "/recorded%lu.wav", file_counter++);  // Include the counter in the file name.
-    File file = SD.open(filename, FILE_WRITE);
+    File file = FSYS.open(filename, FILE_WRITE);
     if (!file) {
         printf("Failed to open file for writing.\n");
         return false;

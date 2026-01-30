@@ -14,7 +14,7 @@
  */
 
 #include "M5Cardputer.h"
-#include "M5GFX.h"
+
 
 M5Canvas canvas(&M5Cardputer.Display);
 String data = "> ";

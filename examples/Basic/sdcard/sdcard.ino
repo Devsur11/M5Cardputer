@@ -16,7 +16,7 @@
 
 #include <M5Cardputer.h>
 #include <SPI.h>
-#include <SD.h>
+#include "SD.h"
 
 #define SD_SPI_SCK_PIN  40
 #define SD_SPI_MISO_PIN 39
@@ -51,7 +51,7 @@ void setup() {
     // SD Card Initialization
     SPI.begin(SD_SPI_SCK_PIN, SD_SPI_MISO_PIN, SD_SPI_MOSI_PIN, SD_SPI_CS_PIN);
 
-    if (!SD.begin(SD_SPI_CS_PIN, SPI, 25000000)) {
+    if (!FSYS.begin(SD_SPI_CS_PIN, SPI, 25000000)) {
         // Print a message if the SD card initialization
         // fails orif the SD card does not exist.
         // 如果SD卡初始化失败或者SD卡不存在，则打印消息.
@@ -60,7 +60,7 @@ void setup() {
             ;
     }
 
-    uint8_t cardType = SD.cardType();
+    uint8_t cardType = FSYS.cardType();
 
     if (cardType == CARD_NONE) {
         println_log("No SD card attached");
@@ -78,7 +78,7 @@ void setup() {
         println_log("UNKNOWN");
     }
 
-    uint64_t cardSize = SD.cardSize() / (1024 * 1024);
+    uint64_t cardSize = FSYS.cardSize() / (1024 * 1024);
     printf_log("SD Card Size: %lluMB\n", cardSize);
 
     listDir(SD, "/", 0);
@@ -93,8 +93,8 @@ void setup() {
     renameFile(SD, "/hello.txt", "/foo.txt");
     readFile(SD, "/foo.txt");
     testFileIO(SD, "/test.txt");
-    printf_log("Total space: %lluMB\n", SD.totalBytes() / (1024 * 1024));
-    printf_log("Used space: %lluMB\n", SD.usedBytes() / (1024 * 1024));
+    printf_log("Total space: %lluMB\n", FSYS.totalBytes() / (1024 * 1024));
+    printf_log("Used space: %lluMB\n", FSYS.usedBytes() / (1024 * 1024));
 }
 void loop() {
 }
